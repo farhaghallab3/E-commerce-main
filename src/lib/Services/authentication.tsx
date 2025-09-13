@@ -18,6 +18,8 @@ export async function signupUserApi(data: {
   rePassword: string;
   phone: string;
 }) {
+  data.email = data.email.trim().toLowerCase();
+
   try {
     const res = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
