@@ -10,14 +10,15 @@ import {
   addProductToWishlist,
   deleteProductFromWishlist,
 } from "@/lib/Services/wishList";
- 
+
+// helper: check cookie
 const getCookie = (name: string) => {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
     const result = parts.pop();
-    return result ? result.split(';').shift() : null;
+    return result ? result.split(";").shift() : null;
   }
   return null;
 };
@@ -38,13 +39,11 @@ export default function ProductCard({
   const [isHovered, setIsHovered] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
- 
   useEffect(() => {
     const checkAuthStatus = () => {
-      const token = getCookie('token');
+      const token = getCookie("token");
       setIsLoggedIn(!!token);
     };
-
     checkAuthStatus();
     const intervalId = setInterval(checkAuthStatus, 1000);
     return () => clearInterval(intervalId);
@@ -54,7 +53,6 @@ export default function ProductCard({
     setInWishlist(isInWishlist);
   }, [isInWishlist]);
 
- 
   const checkAuth = () => {
     if (!isLoggedIn) {
       toast.error("Please login to add items");
@@ -63,13 +61,11 @@ export default function ProductCard({
     return true;
   };
 
- 
+  // Cart
   const { mutate: addToCartMutate } = useMutation({
     mutationFn: () => addProductToCart(product._id),
     onMutate: () => {
-      if (!checkAuth()) {
-        throw new Error("Not authenticated");
-      }
+      if (!checkAuth()) throw new Error("Not authenticated");
       setLoadingCart(true);
     },
     onSuccess: (data) => {
@@ -85,13 +81,11 @@ export default function ProductCard({
     onSettled: () => setLoadingCart(false),
   });
 
-  // Add to Wishlist 
+  // Wishlist Add
   const { mutate: addToWishlistMutate } = useMutation({
     mutationFn: () => addProductToWishlist(product._id),
     onMutate: () => {
-      if (!checkAuth()) {
-        throw new Error("Not authenticated");
-      }
+      if (!checkAuth()) throw new Error("Not authenticated");
       setLoadingWishlist(true);
     },
     onSuccess: (data) => {
@@ -107,13 +101,11 @@ export default function ProductCard({
     onSettled: () => setLoadingWishlist(false),
   });
 
-  // Remove from Wishlist 
+  // Wishlist Remove
   const { mutate: removeFromWishlistMutate } = useMutation({
     mutationFn: () => deleteProductFromWishlist(product._id),
     onMutate: () => {
-      if (!checkAuth()) {
-        throw new Error("Not authenticated");
-      }
+      if (!checkAuth()) throw new Error("Not authenticated");
       setLoadingWishlist(true);
     },
     onSuccess: (data) => {
@@ -128,13 +120,12 @@ export default function ProductCard({
     },
     onSettled: () => setLoadingWishlist(false),
   });
- 
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToCartMutate();
   };
 
- 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (inWishlist) removeFromWishlistMutate();
@@ -143,17 +134,17 @@ export default function ProductCard({
 
   return (
     <Card
-      isPressable
-      onPress={() => router.push(`/products/${product.id}`)}
+      as="div" // important: render as div instead of button
+      onClick={() => router.push(`/products/${product.id}`)}
       className="relative py-4 cursor-pointer transition-all duration-300 ease-in-out"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
         transform: isHovered ? "translateY(-8px)" : "translateY(0)",
-        boxShadow: isHovered 
+        boxShadow: isHovered
           ? "0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 10px rgba(0, 0, 0, 0.05)"
           : "0 4px 6px rgba(0, 0, 0, 0.05)",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       {/* Wishlist Icon */}
@@ -161,9 +152,10 @@ export default function ProductCard({
         role="button"
         aria-pressed={inWishlist}
         className={`absolute top-3 right-3 z-50 p-2 rounded-full shadow cursor-pointer transition-all duration-200
-          ${inWishlist 
-            ? "bg-red-500 text-white scale-110" 
-            : "bg-white text-gray-600 hover:bg-red-100"
+          ${
+            inWishlist
+              ? "bg-red-500 text-white scale-110"
+              : "bg-white text-gray-600 hover:bg-red-100"
           }
           ${isHovered ? "opacity-100" : "opacity-90"}`}
         onClick={handleWishlistToggle}
@@ -171,7 +163,11 @@ export default function ProductCard({
         {loadingWishlist ? (
           <i className="fa-solid fa-spinner fa-spin text-xl"></i>
         ) : (
-          <i className={`text-xl ${inWishlist ? "fa-solid fa-heart" : "fa-regular fa-heart"}`}></i>
+          <i
+            className={`text-xl ${
+              inWishlist ? "fa-solid fa-heart" : "fa-regular fa-heart"
+            }`}
+          ></i>
         )}
       </div>
 
@@ -184,8 +180,7 @@ export default function ProductCard({
           src={product.imageCover}
           width={500}
         />
-        
-       
+
         {isHovered && (
           <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center rounded-xl transition-opacity duration-300">
             <Button
@@ -206,21 +201,29 @@ export default function ProductCard({
 
       {/* Product Details */}
       <CardHeader className="pb-2 pt-2 px-4 flex-col items-start space-y-2">
-        <p className="text-green-600 font-medium text-sm">{product.category.name}</p>
-        <h4 className="font-bold text-lg line-clamp-1 transition-colors duration-200
-          ${isHovered ? 'text-blue-600' : 'text-gray-900'}">
+        <p className="text-green-600 font-medium text-sm">
+          {product.category.name}
+        </p>
+        <h4
+          className={`font-bold text-lg line-clamp-1 transition-colors duration-200 ${
+            isHovered ? "text-blue-600" : "text-gray-900"
+          }`}
+        >
           {product.title}
         </h4>
-        <small className="text-default-500 font-semibold text-md">{product.price} EGP</small>
+        <small className="text-default-500 font-semibold text-md">
+          {product.price} EGP
+        </small>
 
         <Button
           size="sm"
           variant="solid"
           color="success"
           className={`mt-2 w-full transition-all duration-300
-            ${isHovered 
-              ? "bg-green-700 scale-105 shadow-lg" 
-              : "bg-green-600 scale-100"
+            ${
+              isHovered
+                ? "bg-green-700 scale-105 shadow-lg"
+                : "bg-green-600 scale-100"
             }`}
           onClick={handleAddToCart}
         >
